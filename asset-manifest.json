@@ -1,8 +1,8 @@
 {
   "files": {
     "main.css": "/ghem-table-order/static/css/main.8c8b27cf.chunk.css",
-    "main.js": "/ghem-table-order/static/js/main.2f67ff7e.chunk.js",
-    "main.js.map": "/ghem-table-order/static/js/main.2f67ff7e.chunk.js.map",
+    "main.js": "/ghem-table-order/static/js/main.be80ca6c.chunk.js",
+    "main.js.map": "/ghem-table-order/static/js/main.be80ca6c.chunk.js.map",
     "runtime-main.js": "/ghem-table-order/static/js/runtime-main.383b6c29.js",
     "runtime-main.js.map": "/ghem-table-order/static/js/runtime-main.383b6c29.js.map",
     "static/js/2.c33936d7.chunk.js": "/ghem-table-order/static/js/2.c33936d7.chunk.js",
@@ -17,6 +17,6 @@
     "static/js/runtime-main.383b6c29.js",
     "static/js/2.c33936d7.chunk.js",
     "static/css/main.8c8b27cf.chunk.css",
-    "static/js/main.2f67ff7e.chunk.js"
+    "static/js/main.be80ca6c.chunk.js"
   ]
 }
