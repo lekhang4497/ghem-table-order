@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import {
+  Alert,
   Avatar,
   Box,
   Button,
@@ -17,7 +18,7 @@ import {
   ListItem,
   // ListItemAvatar,
   ListItemText,
-  ListSubheader,
+  // ListSubheader,
   Stack,
   // Modal,
   Tab,
@@ -31,6 +32,11 @@ import AddIcon from "@mui/icons-material/Add";
 import { useParams } from "react-router-dom";
 import { DishInfo, DishTypeInfo, UNKNOWN_DISH_INFO } from "../dishes";
 import { getAllDishInfo, getAllDishType } from "../services/DishServices";
+import {
+  createDineInOrder,
+  DineInOrderRequest,
+  OrderRequestItem,
+} from "../api/DineInOrderApi";
 
 const formatDishImg = (imgCode: string, dishType: string) =>
   `${process.env.PUBLIC_URL}/img/dishes/${dishType}/${imgCode}.jpg`;
@@ -66,15 +72,15 @@ const addOrderItem = (
 //   return currentOrder;
 // };
 
-interface OrderItem {
+export interface OrderItem {
   dish: DishInfo;
   number: number;
 }
 
 const Welcome = () => {
   const { tableId } = useParams();
-  console.log(tableId);
   const [dishes, setDishes] = useState<DishInfo[]>([]);
+  const [orderId, setOrderId] = useState<number | null>(null);
   const [dishTypes, setDishTypes] = useState<DishTypeInfo[]>([]);
   const [dishModalOpen, setDishModalOpen] = useState(false);
   const [dishInModal, setDishInModal] = useState<DishInfo>(UNKNOWN_DISH_INFO);
@@ -118,11 +124,42 @@ const Welcome = () => {
     }
     setCurrentOrder(newOrder);
   };
+  async function handleSubmitOrder() {
+    const orderRequestItems: OrderRequestItem[] = currentOrder.map((item) => ({
+      dishCode: item.dish.id,
+      quantity: item.number,
+    }));
+    const request: DineInOrderRequest = {
+      items: orderRequestItems,
+      tableName: tableId || "0",
+    };
+    const response = await createDineInOrder(request);
+    if (response.code === 1) {
+      setOrderId(response.orderId);
+      setCurrentOrder([]);
+    } else {
+      setOrderId(-1);
+    }
+  }
   useEffect(() => {
     fetchDishes();
   }, []);
   return (
     <div>
+      {tableId ? null : (
+        <Alert severity="error">
+          Số bàn không xác định, vui lòng liên hệ nhân viên
+        </Alert>
+      )}
+      {orderId === -1 ? (
+        <Alert severity="error">Lỗi đặt món, vui lòng liên hệ nhân viên</Alert>
+      ) : null}
+      {orderId && orderId !== -1 ? (
+        <Alert severity="success">
+          Đặt món thành công! mã đăt món: {orderId}. Ghém đã nhận được order của
+          quý khách và bếp đang chuẩn bị. Xin cảm ơn.
+        </Alert>
+      ) : null}
       <Box sx={{ mb: 2 }}>
         <img
           width="100%"
@@ -194,30 +231,34 @@ const Welcome = () => {
                 </ListItem>
               ))}
             </List>
-            <Button fullWidth variant="contained" sx={{ mt: 2 }}>
-              Gọi Món
+            <Button
+              fullWidth
+              variant="contained"
+              sx={{ mt: 2 }}
+              onClick={() => handleSubmitOrder()}
+            >
+              Gửi Order
             </Button>
           </Box>
         ) : null}
         <Box sx={{ mb: 2 }}>
           <Divider>MENU</Divider>
         </Box>
-        <Tabs
-          value={currentType}
-          onChange={handleTypeChange}
-          variant="scrollable"
-          scrollButtons
-          allowScrollButtonsMobile
-          aria-label="scrollable auto tabs example"
-        >
-          {dishTypes.map((item) => (
-            <Tab key={item.value} value={item.value} label={item.name} />
-          ))}
-        </Tabs>
-        <ImageList sx={{}} cols={3}>
-          <ImageListItem key="Subheader" cols={3}>
-            <ListSubheader component="div">Món Gà</ListSubheader>
-          </ImageListItem>
+        <Box sx={{ mb: 3 }}>
+          <Tabs
+            value={currentType}
+            onChange={handleTypeChange}
+            variant="scrollable"
+            scrollButtons
+            allowScrollButtonsMobile
+            aria-label="scrollable auto tabs example"
+          >
+            {dishTypes.map((item) => (
+              <Tab key={item.value} value={item.value} label={item.name} />
+            ))}
+          </Tabs>
+        </Box>
+        <ImageList cols={3}>
           {dishes
             .filter((item) => item.type === currentType)
             .map((item) => (
