@@ -18,6 +18,7 @@ import {
 import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
 import KeyboardArrowUpIcon from "@mui/icons-material/KeyboardArrowUp";
 // import { DishInfo } from "../dishes";
+// import { green } from "@mui/material/colors";
 import { getDineInOrder, changeOrderStatus } from "../api/DineInOrderApi";
 
 interface DishItem {
@@ -39,6 +40,56 @@ interface OrderInfo {
     quantity: number;
   }[];
 }
+
+const COLOR_MAP: Record<
+  string,
+  "default" | "primary" | "secondary" | "error" | "info" | "success" | "warning"
+> = {
+  PROCESSING: "warning",
+  CREATED: "default",
+  COMPLETED: "success",
+};
+
+// const NEXT_STEP = {
+//   PROCESSING: "COMPLETED",
+//   CREATED: "PROCESSING",
+// };
+//
+// const StepActionButton = (props: {
+//   orderId: number;
+//   step: string;
+//   handleChangeStatusOrder: any;
+// }) => {
+//   const { orderId, step, handleChangeStatusOrder } = props;
+//   if (step === "CREATED") {
+//     return (
+//       <Button
+//         variant="outlined"
+//         onClick={() => handleChangeStatusOrder(orderId, "processing")}
+//       >
+//         Đang Nấu
+//       </Button>
+//     );
+//   }
+//   if (step === "PROCESSING") {
+//     return (
+//       <Button
+//         variant="outlined"
+//         onClick={() => handleChangeStatusOrder(orderId, "completed")}
+//       >
+//         Hoàn Thành
+//       </Button>
+//     );
+//   }
+//   if (step === "COMPLETED") {
+//     return (
+//       <Button onClick={() => handleChangeStatusOrder(orderId, "created")}>
+//         Tạo lại Order
+//       </Button>
+//     );
+//   }
+//   return <div>Không xác định</div>;
+// };
 
 // eslint-disable-next-line react/no-unused-prop-types
 function Row(props: { order: OrderInfo; onChange: any }) {
@@ -70,22 +121,29 @@ function Row(props: { order: OrderInfo; onChange: any }) {
         <TableCell align="right">
           <Chip
             label={order.status}
-            color={order.status === "COMPLETED" ? "success" : "default"}
+            color={COLOR_MAP[order.status ? order.status : "processing"]}
           />
         </TableCell>
         <TableCell align="center">
-          {order.status !== "COMPLETED" ? (
+          {/* eslint-disable-next-line no-nested-ternary */}
+          {order.status === "COMPLETED" ? (
             <Button
               variant="outlined"
-              onClick={() => handleChangeStatusOrder(order.id, "complete")}
+              onClick={() => handleChangeStatusOrder(order.id, "created")}
             >
-              Complete
+              Tạo lại Order
+            </Button>
+          ) : order.status === "CREATED" ? (
+            <Button
+              onClick={() => handleChangeStatusOrder(order.id, "processing")}
+            >
+              Bắt đầu nấu
             </Button>
           ) : (
             <Button
-              onClick={() => handleChangeStatusOrder(order.id, "created")}
+              onClick={() => handleChangeStatusOrder(order.id, "complete")}
             >
-              Incomplete
+              Hoàn thành
             </Button>
           )}
         </TableCell>
@@ -123,10 +181,28 @@ function Row(props: { order: OrderInfo; onChange: any }) {
   );
 }
 
+const getStatusValue = (status: string | undefined) => {
+  switch (status) {
+    case "CREATED":
+      return 1;
+    case "PROCESSING":
+      return 2;
+    case "COMPLETED":
+      return 3;
+    default:
+      return 0;
+  }
+};
+
 const Manage = () => {
   const [orders, setOrders] = useState<OrderInfo[]>([]);
   async function fetchOrders() {
-    const fetchedOrder = await getDineInOrder();
+    const fetchedOrder: OrderInfo[] = await getDineInOrder();
+    if (fetchedOrder) {
+      fetchedOrder.sort(
+        (a, b) => getStatusValue(a.status) - getStatusValue(b.status)
+      );
+    }
     setOrders(fetchedOrder);
   }
   useEffect(() => {

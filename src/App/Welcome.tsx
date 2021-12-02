@@ -80,6 +80,7 @@ export interface OrderItem {
 const Welcome = () => {
   const { tableId } = useParams();
   const [dishes, setDishes] = useState<DishInfo[]>([]);
+  const [isSubmitting, setIsSubmiting] = useState(false);
   const [orderId, setOrderId] = useState<number | null>(null);
   const [dishTypes, setDishTypes] = useState<DishTypeInfo[]>([]);
   const [dishModalOpen, setDishModalOpen] = useState(false);
@@ -133,12 +134,17 @@ const Welcome = () => {
       items: orderRequestItems,
       tableName: tableId || "0",
     };
-    const response = await createDineInOrder(request);
-    if (response.code === 1) {
-      setOrderId(response.orderId);
-      setCurrentOrder([]);
-    } else {
-      setOrderId(-1);
+    try {
+      setIsSubmiting(true);
+      const response = await createDineInOrder(request);
+      if (response.code === 1) {
+        setOrderId(response.orderId);
+        setCurrentOrder([]);
+      } else {
+        setOrderId(-1);
+      }
+    } finally {
+      setIsSubmiting(false);
     }
   }
   useEffect(() => {
@@ -148,15 +154,15 @@ const Welcome = () => {
     <div>
       {tableId ? null : (
         <Alert severity="error">
-          Số bàn không xác định, vui lòng liên hệ nhân viên
+          Số bàn không xác định, vui lòng liên hệ nhân viên.
         </Alert>
       )}
       {orderId === -1 ? (
-        <Alert severity="error">Lỗi đặt món, vui lòng liên hệ nhân viên</Alert>
+        <Alert severity="error">Lỗi đặt món, vui lòng liên hệ nhân viên.</Alert>
       ) : null}
       {orderId && orderId !== -1 ? (
         <Alert severity="success">
-          Đặt món thành công! mã đăt món: {orderId}. Ghém đã nhận được order của
+          Đặt món thành công! Mã đặt món: {orderId}. Ghém đã nhận được order của
           quý khách và bếp đang chuẩn bị. Xin cảm ơn.
         </Alert>
       ) : null}
@@ -235,6 +241,7 @@ const Welcome = () => {
               fullWidth
               variant="contained"
               sx={{ mt: 2 }}
+              disabled={isSubmitting}
               onClick={() => handleSubmitOrder()}
             >
               Gửi Order
@@ -286,7 +293,13 @@ const Welcome = () => {
         >
           <Box sx={{ py: 2 }}>
             <Container maxWidth="sm">
-              <Box sx={{ display: "flex", justifyContent: "center" }}>
+              <Box
+                sx={{
+                  display: "flex",
+                  justifyContent: "center",
+                  alignItems: "flex-start",
+                }}
+              >
                 <img
                   width="60%"
                   src={formatDishImg(dishInModal.image, dishInModal.type)}
