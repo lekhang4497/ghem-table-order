@@ -4,6 +4,9 @@ import { createTheme, ThemeProvider } from "@mui/material";
 import TableOrderRoute from "./routes/TableOrderRoute";
 
 const theme = createTheme({
+  typography: {
+    fontFamily: '"Open Sans", "Roboto", "Helvetica", "Arial", sans-serif',
+  },
   palette: {
     primary: {
       light: "#ff8a50",

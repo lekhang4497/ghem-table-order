@@ -126,14 +126,7 @@ function Row(props: { order: OrderInfo; onChange: any }) {
         </TableCell>
         <TableCell align="center">
           {/* eslint-disable-next-line no-nested-ternary */}
-          {order.status === "COMPLETED" ? (
-            <Button
-              variant="outlined"
-              onClick={() => handleChangeStatusOrder(order.id, "created")}
-            >
-              Tạo lại Order
-            </Button>
-          ) : order.status === "CREATED" ? (
+          {order.status === "COMPLETED" ? null : order.status === "CREATED" ? (
             <Button
               onClick={() => handleChangeStatusOrder(order.id, "processing")}
             >
